@@ -44,10 +44,9 @@ const migrateSettings = settings => {
                     enabled: true
                 };
             }
-            if (interfaceCustomization.removeFeedback) {
+           
                 settings['tw-remove-feedback'] = {
                     enabled: true
-                };
             }
         }
     }

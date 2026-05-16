@@ -32,7 +32,7 @@ import ev3InsetIconURL from './ev3/ev3-small.svg';
 import ev3ConnectionIconURL from './ev3/ev3-hub-illustration.svg';
 import ev3ConnectionSmallIconURL from './ev3/ev3-small.svg';
 
-import wedo2IconURL from './wedo2/wedo.png'; // TODO: Rename file names to match variable/prop names?
+import wedo2IconURL from './wedo2/wedo.png';
 import wedo2InsetIconURL from './wedo2/wedo-small.svg';
 import wedo2ConnectionIconURL from './wedo2/wedo-illustration.svg';
 import wedo2ConnectionSmallIconURL from './wedo2/wedo-small.svg';
@@ -55,7 +55,87 @@ import returnIcon from './custom/return.svg';
 import galleryIcon from './gallery/gallery.svg';
 import {APP_NAME} from '../../brand';
 
+import e3otIconURL from './e3ot/e3ot-icon.svg';
+import e3otInsetIconURL from './e3ot/e3ot-small.svg';
+
+// ========================================================
+// 📦 ローカルの拡張機能ソースコードをテキストとしてインポート
+// ========================================================
+import raiproExtensionSource from '!raw-loader!../../../examples/extensions/e3oT_raipro_v3.2X.js';
+import gtproExtensionSource from '!raw-loader!../../../examples/extensions/e3ot_GTpro_v3.2X.js';
+
+// Data URL生成
+const raiproDataURL = 'data:application/javascript;base64,' + 
+    btoa(unescape(encodeURIComponent(raiproExtensionSource)));
+const gtproDataURL = 'data:application/javascript;base64,' + 
+    btoa(unescape(encodeURIComponent(gtproExtensionSource)));
+
+// ========================================================
+// 🔧 VMのsecurityManagerを書き換える関数
+// ========================================================
+let _originalGetSandboxMode = null;
+
+const enableUnsandboxedForLocalExtensions = (vm) => {
+    if (!vm || !vm.securityManager) return;
+    if (_originalGetSandboxMode) return;
+    
+    _originalGetSandboxMode = vm.securityManager.getSandboxMode.bind(vm.securityManager);
+    
+    vm.securityManager.getSandboxMode = (extensionURL) => {
+        if (extensionURL.startsWith('data:')) return Promise.resolve('unsandboxed');
+        if (extensionURL.startsWith('blob:')) return Promise.resolve('unsandboxed');
+        if (extensionURL.startsWith('http://localhost:')) return Promise.resolve('unsandboxed');
+        if (extensionURL.startsWith('https://extensions.turbowarp.org/')) return Promise.resolve('unsandboxed');
+        return _originalGetSandboxMode(extensionURL);
+    };
+};
+
+const restoreOriginalSandboxMode = (vm) => {
+    if (_originalGetSandboxMode && vm && vm.securityManager) {
+        vm.securityManager.getSandboxMode = _originalGetSandboxMode;
+        _originalGetSandboxMode = null;
+    }
+};
+
+// ========================================================
+// 🚀 e3oT_raipro_v3.2X（無印版）← 先に表示
+// ========================================================
+const e3otRaiproExtension = {
+    name: 'e3oT raipro v3.2X',
+    extensionId: 'e3otRaipro',
+    collaborator: 'soutam4',
+    iconURL: e3otIconURL,
+    insetIconURL: e3otInsetIconURL,
+    description: 'e3oT v3.2のraipro版（基本版）。',
+    featured: true,
+    disabled: false,
+    extensionURL: raiproDataURL,
+    onClick: (vm) => {
+        enableUnsandboxedForLocalExtensions(vm);
+    }
+};
+
+// ========================================================
+// 🚀 e3ot_GTpro_v3.2X（GTpro版）← 後に表示
+// ========================================================
+const e3otGtproExtension = {
+    name: 'e3ot GTpro v3.2X',
+    extensionId: 'e3otGTpro',
+    collaborator: 'soutam4',
+    iconURL: e3otIconURL,
+    insetIconURL: e3otInsetIconURL,
+    description: 'e3oT v3.2のGTpro版（レースゲーム向け）。',
+    featured: true,
+    disabled: false,
+    extensionURL: gtproDataURL,
+    onClick: (vm) => {
+        enableUnsandboxedForLocalExtensions(vm);
+    }
+};
+
 export default [
+    e3otRaiproExtension,
+    e3otGtproExtension,
     {
         name: (
             <FormattedMessage
@@ -179,7 +259,7 @@ export default [
         description: (
             <FormattedMessage
                 defaultMessage="Translate text into many languages."
-                description="Description for the Translate extension"
+                description="Description for the 'Translate' extension"
                 id="gui.extension.translate.description"
             />
         ),
@@ -361,7 +441,6 @@ export default [
         helpLink: 'https://scratch.mit.edu/vernier'
     },
     {
-        // not really an extension, but it's easiest to present it as one
         name: (
             <FormattedMessage
                 defaultMessage="Custom Reporters"
@@ -425,7 +504,6 @@ export default [
         ),
         tags: ['tw'],
         featured: true
-        // Not marked as incompatible with Scratch so that clicking on it doesn't show a prompt
     }
 ];
 
@@ -445,7 +523,6 @@ export const galleryLoading = {
     iconURL: galleryIcon,
     description: (
         <FormattedMessage
-            // eslint-disable-next-line max-len
             defaultMessage="Loading extension gallery..."
             description="Appears while loading extension list from the custom extension gallery"
             id="tw.extensionGallery.loading"
@@ -471,7 +548,6 @@ export const galleryMore = {
     iconURL: galleryIcon,
     description: (
         <FormattedMessage
-            // eslint-disable-next-line max-len
             defaultMessage="Learn more about extensions at extensions.turbowarp.org."
             description="Appears after the extension list from the gallery was loaded successfully"
             id="tw.extensionGallery.more"
@@ -497,7 +573,6 @@ export const galleryError = {
     iconURL: galleryIcon,
     description: (
         <FormattedMessage
-            // eslint-disable-next-line max-len
             defaultMessage="Error loading extension gallery. Visit extensions.turbowarp.org to find more extensions."
             description="Appears when an error occurred loading extension list from the custom extension gallery"
             id="tw.extensionGallery.error"
@@ -506,3 +581,5 @@ export const galleryError = {
     tags: ['tw'],
     featured: true
 };
+
+export { enableUnsandboxedForLocalExtensions, restoreOriginalSandboxMode };

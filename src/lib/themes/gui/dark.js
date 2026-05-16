@@ -11,13 +11,15 @@ const guiColors = {
     'ui-modal-header-background': '#333333',
     'ui-modal-header-foreground': '#ffffff',
 
-    'ui-white': '#111111',
+    // 通常時のスプライトカード背景などのベース
+    'ui-white': '#1a1a1a',
 
     'ui-black-transparent': '#ffffff26',
 
     'text-primary': '#eeeeee',
 
-    'menu-bar-background': '#333333',
+    'menu-bar-background': '#111111', // ヘッダーも深い黒に統一
+    'menu-bar-foreground': '#ffffff',
 
     'assets-background': '#111111',
 
@@ -37,7 +39,17 @@ const guiColors = {
     'project-title-inactive': 'var(--ui-secondary)',
     'project-title-hover': '#ffffff3f',
 
-    'link-color': '#44aaff',
+    'link-color': '#ffffff', // リンクも白
+
+    // ========================================================
+    // 🖤 スプライトタイルの赤ピンクを強制的に白黒にする追加定義
+    // ========================================================
+    'ui-accent': '#ffffff',                 // 選択された時の外枠（白）
+    'box-selected-border': '#ffffff',       // 選択されたスプライトの枠線（白）
+    'box-selected-background': '#ffffff',   // 選択されたスプライトの文字背景（白）
+    'box-selected-text': '#111111',         // 選択されたスプライトの文字（黒）
+    'box-selected-recolor': '#111111',      // 選択されたスプライト内のアイコン（黒）
+    'box-selected-el-background': '#e0e0e0', // ゴミ箱の丸い背景（薄いグレー）
 
     'filter-icon-black': 'invert(100%)',
     'filter-icon-gray': 'grayscale(100%) brightness(1.7)',

@@ -140,6 +140,26 @@ class ExtensionLibrary extends React.PureComponent {
         }
 
         const url = item.extensionURL ? item.extensionURL : extensionId;
+
+        // ========================================================
+        // ★★★ 追加：Data URL / Blob URL / localhost を非サンドボックス化 ★★★
+        // ========================================================
+        const isLocalExtension = url.startsWith('data:') ||
+                                 url.startsWith('blob:') ||
+                                 url.startsWith('http://localhost:');
+
+        if (isLocalExtension) {
+            const vm = this.props.vm;
+            const originalGetSandboxMode = vm.securityManager.getSandboxMode.bind(vm.securityManager);
+            vm.securityManager.getSandboxMode = (extensionURL) => {
+                if (extensionURL.startsWith('data:')) return Promise.resolve('unsandboxed');
+                if (extensionURL.startsWith('blob:')) return Promise.resolve('unsandboxed');
+                if (extensionURL.startsWith('http://localhost:')) return Promise.resolve('unsandboxed');
+                return originalGetSandboxMode(extensionURL);
+            };
+        }
+        // ========================================================
+
         if (!item.disabled) {
             if (this.props.vm.extensionManager.isExtensionLoaded(extensionId)) {
                 this.props.onCategorySelected(extensionId);
